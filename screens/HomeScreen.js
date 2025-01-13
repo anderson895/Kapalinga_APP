@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,30 +8,27 @@ import {
 } from "react-native";
 import LanguagePicker from "../components/LanguagePicker";
 import SwapButton from "../components/SwapButton";
+import { translateText } from "../services/translationService";
 
 export default function HomeScreen() {
   const [sourceLanguage, setSourceLanguage] = useState("English");
   const [targetLanguage, setTargetLanguage] = useState("Kapampangan");
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSourceLanguageChange = (newSourceLanguage) => {
-    // Set the new source language
     setSourceLanguage(newSourceLanguage);
-
-    // Automatically adjust the target language if Kapampangan is selected as source
     if (newSourceLanguage === "Kapampangan") {
-      setTargetLanguage("English"); // Default to English if source is Kapampangan
+      setTargetLanguage("English");
     } else {
-      // If Kapampangan is not the source, we set the target language to Kapampangan
       setTargetLanguage("Kapampangan");
     }
   };
 
   const handleTargetLanguageChange = (newTargetLanguage) => {
-    // Ensure that Kapampangan cannot be set as both source and target
     if (newTargetLanguage === "Kapampangan") {
-      setTargetLanguage("English"); // Default to English if target is Kapampangan
+      setTargetLanguage("English");
     } else {
       setTargetLanguage(newTargetLanguage);
     }
@@ -42,6 +39,26 @@ export default function HomeScreen() {
     setSourceLanguage(targetLanguage);
     setTargetLanguage(temp);
   };
+
+  const handleTranslation = async () => {
+    if (!text.trim()) {
+      setTranslatedText("");
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await translateText(text, sourceLanguage, targetLanguage);
+      setTranslatedText(result);
+    } catch (error) {
+      setTranslatedText("Translation failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleTranslation();
+  }, [text, sourceLanguage, targetLanguage]);
 
   return (
     <View style={styles.container}>
@@ -67,7 +84,11 @@ export default function HomeScreen() {
       />
       <Text style={styles.label}>{targetLanguage}</Text>
       <View style={styles.output}>
-        <Text>{translatedText || " "}</Text>
+        {loading ? (
+          <Text style={styles.loadingText}>Translating...</Text>
+        ) : (
+          <Text>{translatedText || "Translation will appear here..."}</Text>
+        )}
       </View>
     </View>
   );
@@ -114,5 +135,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 10,
     textAlignVertical: "top",
+    justifyContent: "center",
+  },
+  loadingText: {
+    color: "#888",
+    fontStyle: "italic",
   },
 });

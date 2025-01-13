@@ -16,6 +16,7 @@ export default function HomeScreen() {
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dots, setDots] = useState(""); // State to control the dots for the animation
 
   const handleSourceLanguageChange = (newSourceLanguage) => {
     setSourceLanguage(newSourceLanguage);
@@ -46,6 +47,7 @@ export default function HomeScreen() {
       return;
     }
     setLoading(true);
+    setDots(""); // Reset the dots animation
     try {
       const result = await translateText(text, sourceLanguage, targetLanguage);
       setTranslatedText(result);
@@ -59,6 +61,22 @@ export default function HomeScreen() {
   useEffect(() => {
     handleTranslation();
   }, [text, sourceLanguage, targetLanguage]);
+
+  useEffect(() => {
+    if (loading) {
+      const dotInterval = setInterval(() => {
+        setDots((prevDots) => {
+          if (prevDots.length < 3) {
+            return prevDots + ".";
+          } else {
+            return "";
+          }
+        });
+      }, 500); // Change dots every 500ms
+
+      return () => clearInterval(dotInterval); // Clear the interval when loading is complete
+    }
+  }, [loading]);
 
   return (
     <View style={styles.container}>
@@ -85,7 +103,7 @@ export default function HomeScreen() {
       <Text style={styles.label}>{targetLanguage}</Text>
       <View style={styles.output}>
         {loading ? (
-          <Text style={styles.loadingText}>Translating...</Text>
+          <Text style={styles.loadingText}>Translating{dots}</Text>
         ) : (
           <Text>{translatedText || "Translation will appear here..."}</Text>
         )}

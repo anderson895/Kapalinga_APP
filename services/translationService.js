@@ -3,7 +3,7 @@ export async function translateText(text, sourceLanguage, targetLanguage) {
       return ''; // Stop translating if there's no text
   }
 
-  const BASE_URL = "https://kapalinga.onrender.com/translate";
+  const BASE_URL = "https://kapalinga-api-git-main-anderson895s-projects.vercel.app/translate";
   const endpointMap = {
     "English_Kapampangan": "english_kapampangan",
     "Kapampangan_English": "kapampangan_english",
